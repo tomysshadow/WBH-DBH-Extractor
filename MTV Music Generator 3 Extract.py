@@ -1,24 +1,20 @@
 import struct
 import os
 
-true = True
-false = False
-null = None
-
 def cstring(f):
 	cstr = ''
 	byte = f.read(1)
 	if byte:
 		byte = struct.unpack("B", byte)[0]
 		if byte == 0:
-			return false
+			return False
 		while byte and byte != 0:
-			# Can't use struct.unpack("c"... so use struct.unpack("B"... and convert type
+			# can't use struct.unpack("c"... so use struct.unpack("B"... and convert type
 			cstr += chr(byte)
 			byte = struct.unpack("B", f.read(1))[0]
 		return cstr
 	else:
-		return false
+		return False
 
 def synchsafe(in2):
         out = 127
@@ -114,7 +110,7 @@ def writeID3v2(i, f, WAVEID3v2Length):
 def extractWHD():
         # WHD
         wbd = {}
-        f = open("F:\\MTV Music Generator 3\\outputx.whd", "rb")
+        f = open("outputx.whd", "rb")
         f.seek(8, 0)
         wbdOffset = f.read(4)
         while wbdOffset:
@@ -134,10 +130,10 @@ def extractWHD():
         f.close()
 
         # WBD
-        f = open("F:\\MTV Music Generator 3\\outputx.wbd", "rb")
+        f = open("outputx.wbd", "rb")
         for i in wbd.items():
                 if i[0] != "":
-                        outputxfile = "F:\\MTV Music Generator 3\\" + i[0]
+                        outputxfile = i[0]
                         if not os.path.exists(os.path.split(outputxfile)[0]):
                                 os.makedirs(os.path.split(outputxfile)[0])
                         f2 = open(outputxfile, "wb+")
@@ -149,7 +145,7 @@ def extractWHD():
 def extractDBD():
         # opening data from dbbody.dbd requires the WBD to be extracted first
         # open the SampleBase
-        f = open("F:\\MTV Music Generator 3\\Database\\dbheader.dbh", "rb")
+        f = open("database\\dbheader.dbh", "rb")
         dbdGenres = []
         dbdCategories = []
         f.seek(12, 0)
@@ -174,7 +170,7 @@ def extractDBD():
                         while f.tell() - categoryPos < 192:
                                 dbdSubcategory = cstring(f)
                                 # if there's no string here, it's on to the sources and then the next genre
-                                if dbdSubcategory == false:
+                                if dbdSubcategory == False:
                                         break
                                 print("DBD - " + i + " Subcategory: " + dbdSubcategory)
                                 dbdSubcategories[dbdGenres[-1]][i].append(dbdSubcategory)
@@ -184,7 +180,7 @@ def extractDBD():
                 categoryPos = f.tell()
                 dbdSources[dbdGenres[-1]] = []
                 dbdSource = cstring(f)
-                while dbdSource != false and f.tell() - genrePos < 1072:
+                while dbdSource != False and f.tell() - genrePos < 1072:
                         print("DBD - " + dbdGenres[-1] + " Source: " + dbdSource)
                         dbdSources[dbdGenres[-1]].append(dbdSource)
                         f.seek(31 - len(dbdSource), 1)
@@ -196,9 +192,11 @@ def extractDBD():
         dbd = {}
         dbdBits = 16
         dbdFrequency = 48000
+        f.seek(0, 2)
+        fLength = f.tell()
         f.seek(10866, 0)
         # could use the length of the file - or not ;)
-        while f.tell() < 220320:
+        while f.tell() < fLength:
                 dbdBars = struct.unpack("<H", f.read(2))[0]
                 dbdGenre = dbdGenres[struct.unpack("<I", f.read(4))[0]]
                 dbdCategory = dbdCategories[struct.unpack("<I", f.read(4))[0]]
@@ -242,10 +240,10 @@ def extractDBD():
                 f.seek(21 - len(dbdName), 1)
         f.close()
 
-        f2 = open("F:\\MTV Music Generator 3\\Database\\dbbody.dbd", "rb")
+        f2 = open("database\\dbbody.dbd", "rb")
         for i in dbd.items():
                 if i[0] and i[0] != "":
-                        samplebasedir = "F:\\MTV Music Generator 3\\Database\\" + i[1]["Genre"] +  "\\" + i[1]["Category"] +  "\\" + i[1]["Subcategory"] +  "\\" + i[0] +  ".wav"
+                        samplebasedir = i[1]["Genre"] +  "\\" + i[1]["Category"] +  "\\" + i[1]["Subcategory"] +  "\\" + i[0] +  ".wav"
                         if not os.path.exists(os.path.split(samplebasedir)[0]):
                                 os.makedirs(os.path.split(samplebasedir)[0])
                         f = open(samplebasedir, "wb+")
